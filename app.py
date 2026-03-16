@@ -565,14 +565,14 @@ def tab_prereview():
             "Summary",
             placeholder="e.g. App crashes while sending voice message (Redmi 10)",
             label_visibility="collapsed",
-            key="pre_summary",
+            key="pre_summary_v3",
         )
  
         st.markdown('<div class="section-label">Steps to Reproduce</div>', unsafe_allow_html=True)
         steps = st.text_area(
             "Steps",
             placeholder="1. Open chat\n2. Tap voice message\n3. Record and send\n4. App force closes",
-            height=100, label_visibility="collapsed", key="pre_steps",
+            height=100, label_visibility="collapsed", key="pre_steps_v3",
         )
  
         col_a, col_e = st.columns(2)
@@ -580,13 +580,13 @@ def tab_prereview():
             st.markdown('<div class="section-label">🔴 Actual Result</div>', unsafe_allow_html=True)
             actual = st.text_area(
                 "Actual", placeholder="What happens?",
-                height=90, label_visibility="collapsed", key="pre_actual",
+                height=90, label_visibility="collapsed", key="pre_actual_v3",
             )
         with col_e:
             st.markdown('<div class="section-label">🟢 Expected Result</div>', unsafe_allow_html=True)
             expected = st.text_area(
                 "Expected", placeholder="What should happen?",
-                height=90, label_visibility="collapsed", key="pre_expected",
+                height=90, label_visibility="collapsed", key="pre_expected_v3",
             )
  
         col_f, col_d = st.columns(2)
@@ -599,18 +599,18 @@ def tab_prereview():
             freq_display = list(freq_labels.values())
             freq_keys    = list(freq_labels.keys())
             sel = st.selectbox("Freq", freq_display, index=0,
-                               label_visibility="collapsed", key="pre_freq")
+                               label_visibility="collapsed", key="pre_freq_v3")
             freq = freq_keys[freq_display.index(sel)]
  
         with col_d:
             st.markdown('<div class="section-label">📱 Device / OS Scope</div>', unsafe_allow_html=True)
-            live = (st.session_state.get("pre_summary", "") + " " +
-                    st.session_state.get("pre_steps", ""))
+            live = (st.session_state.get("pre_summary_v3", "") + " " +
+                    st.session_state.get("pre_steps_v3", ""))
             auto_dev = auto_detect_device(live)
             device_scope = st.text_input(
                 "Device", value=auto_dev,
                 placeholder="e.g. Samsung A5, iOS 16…",
-                label_visibility="collapsed", key="pre_device",
+                label_visibility="collapsed", key="pre_device_v3",
             )
             if auto_dev and auto_dev.lower() == device_scope.strip().lower():
                 st.markdown('<div style="font-size:0.7rem;color:#FF9800;margin-top:3px">⚡ Auto-detected</div>', unsafe_allow_html=True)
@@ -620,7 +620,7 @@ def tab_prereview():
                 st.markdown('<div style="font-size:0.7rem;color:#3A4A6B;margin-top:3px">Leave empty = all devices</div>', unsafe_allow_html=True)
  
         st.markdown("<br>", unsafe_allow_html=True)
-        analyze = st.button("▶  Analyze Priority", key="pre_analyze")
+        analyze = st.button("▶  Analyze Priority", key="pre_analyze_v3")
  
         # Legend
         st.markdown("<br>", unsafe_allow_html=True)
@@ -707,7 +707,7 @@ def tab_prereview():
             "⬇ Export session as CSV",
             data=hist_df.to_csv(index=False).encode("utf-8"),
             file_name="stp_session.csv", mime="text/csv",
-            key=f"dl_pre_{len(st.session_state.history)}",
+            key=f"dl_pre_v3_{len(st.session_state.history)}",
         )
  
  
@@ -837,7 +837,7 @@ def tab_reprioritizer():
             unsafe_allow_html=True,
         )
         uploaded = st.file_uploader(
-            "CSV", type=["csv"], label_visibility="collapsed", key="reprio_upload"
+            "CSV", type=["csv"], label_visibility="collapsed", key="reprio_upload_v3"
         )
     with col_info:
         st.markdown("""
@@ -890,14 +890,14 @@ def tab_reprioritizer():
     col_f1, col_f2, col_f3 = st.columns([1, 2, 1])
     with col_f1:
         show_changed = st.checkbox(
-            "Sadece değişenleri göster", value=True, key="reprio_changed"
+            "Sadece değişenleri göster", value=True, key="reprio_changed_v3"
         )
     with col_f2:
         filter_stp = st.multiselect(
             "STP Priority filtrele",
             ["Gating", "High", "Medium", "Low"],
             default=["Gating", "High", "Medium", "Low"],
-            key="reprio_filter",
+            key="reprio_filter_v3",
             label_visibility="collapsed",
         )
     with col_f3:
@@ -988,11 +988,22 @@ def tab_reprioritizer():
             reason_clean = reason_clean.strip(' ·').strip()
             st.markdown(
                 f'<div style="padding:0.2rem 0 0.6rem 0">' +
-                f'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:0.8rem">' +
-                f'<span style="font-family:JetBrains Mono,monospace;font-size:0.78rem;color:#1976D2;font-weight:600">{row["Issue Key"]}</span>' +
-                f'{change_html}' +
+                f'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:0.8rem">' +
+                f'<span style="font-family:JetBrains Mono,monospace;font-size:0.78rem;color:#1976D2;font-weight:700">{row["Issue Key"]}</span>' +
                 f'</div>' +
-                f'<div style="font-size:0.82rem;color:#5A6A8A;margin-bottom:0.6rem">{str(row["Summary"])}</div>' +
+                f'<div style="font-size:0.84rem;color:#1A2340;font-weight:500;margin-bottom:0.8rem">{str(row["Summary"])}</div>' +
+                f'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0.6rem">' +
+                f'<div style="background:#F4F6FA;border:1.5px solid #D0D9E8;border-radius:8px;padding:0.6rem 0.8rem">' +
+                f'<div style="font-family:monospace;font-size:0.6rem;color:#7890B0;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">Current Priority</div>' +
+                f'<span class="p-badge" style="background:{cur_col}">{cur if cur else "—"}</span>' +
+                f'</div>' +
+                f'<div style="background:#EBF3FD;border:1.5px solid #90CAF9;border-radius:8px;padding:0.6rem 0.8rem">' +
+                f'<div style="font-family:monospace;font-size:0.6rem;color:#1976D2;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">STP Priority</div>' +
+                f'<span class="p-badge" style="background:{stp_col}">{stp}</span>' +
+                (f'&nbsp;<span style="font-size:0.7rem;color:#E53935;font-weight:600">▲ yükseldi</span>' if PRIORITY_ORDER.index(stp) < PRIORITY_ORDER.index(cur) and cur in PRIORITY_ORDER and stp in PRIORITY_ORDER else '') +
+                (f'&nbsp;<span style="font-size:0.7rem;color:#43A047;font-weight:600">▼ düştü</span>' if PRIORITY_ORDER.index(stp) > PRIORITY_ORDER.index(cur) and cur in PRIORITY_ORDER and stp in PRIORITY_ORDER else '') +
+                f'</div>' +
+                f'</div>' +
                 content_block +
                 (f'<div style="margin-top:0.8rem;padding:0.6rem 0.8rem;background:#F0F4FA;border-radius:6px;border-left:3px solid #4FC3F7">' +
                  f'<div style="font-family:monospace;font-size:0.6rem;color:#1976D2;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">Karar gerekcesi</div>' +
@@ -1013,20 +1024,32 @@ def tab_reprioritizer():
     # ── Downloads ─────────────────────────────────────────────
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
     col_d1, col_d2 = st.columns(2)
+    def _build_export(df):
+        out = df[["Issue Key", "Summary", "Current Priority", "STP Priority",
+                  "Extracted Steps", "Extracted Actual", "Extracted Expected", "Reason"]].copy()
+        out.columns = [
+            "Issue Key", "Summary",
+            "Current Priority", "STP Priority",
+            "Steps (from Description)", "Actual Result (from Description)",
+            "Expected Result (from Description)", "STP Decision Reason",
+        ]
+        return out
+ 
     with col_d1:
-        diff = out_df[out_df["Changed"]]
+        diff_export = _build_export(out_df[out_df["Changed"]])
         st.download_button(
             "⬇ Değişen issue'lar (CSV)",
-            data=diff.to_csv(index=False).encode("utf-8"),
+            data=diff_export.to_csv(index=False).encode("utf-8"),
             file_name=f"REPRIO_DIFF_{Path(fname).stem}.csv",
-            mime="text/csv", key="reprio_dl_diff",
+            mime="text/csv", key="reprio_dl_diff_v3",
         )
     with col_d2:
+        all_export = _build_export(out_df)
         st.download_button(
             "⬇ Tüm analiz (CSV)",
-            data=out_df.to_csv(index=False).encode("utf-8"),
+            data=all_export.to_csv(index=False).encode("utf-8"),
             file_name=f"REPRIO_ALL_{Path(fname).stem}.csv",
-            mime="text/csv", key="reprio_dl_all",
+            mime="text/csv", key="reprio_dl_all_v3",
         )
  
  
@@ -1066,9 +1089,6 @@ def main():
     with tab2:
         tab_reprioritizer()
  
- 
-if __name__ == "__main__":
-    main()
  
 if __name__ == "__main__":
     main()
