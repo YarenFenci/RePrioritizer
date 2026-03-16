@@ -679,12 +679,14 @@ def render_reprio_summary_stats(out_df: pd.DataFrame):
     n_total   = len(out_df)
     n_changed = int(out_df["Changed"].sum())
  
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
     for col, num, label, color in [
         (c1, n_total,   "Toplam Issue",     "#4FC3F7"),
         (c2, n_changed, "Priority Degisti", "#FB8C00"),
-        (c3, int(out_df["STP Priority"].eq("Gating").sum()), "Gating (STP)", "#E53935"),
-        (c4, int(out_df["STP Priority"].eq("High").sum()),   "High (STP)",   "#FB8C00"),
+        (c3, int(out_df["STP Priority"].eq("Gating").sum()), "Gating",  "#E53935"),
+        (c4, int(out_df["STP Priority"].eq("High").sum()),   "High",    "#FB8C00"),
+        (c5, int(out_df["STP Priority"].eq("Medium").sum()), "Medium",  "#1E88E5"),
+        (c6, int(out_df["STP Priority"].eq("Low").sum()),    "Low",     "#43A047"),
     ]:
         col.markdown(
             f'<div class="stat-box"><div class="stat-num" style="color:{color}">{num}</div>'
@@ -892,15 +894,7 @@ def tab_reprioritizer():
         else:
             change_html = f'{stp_html} <span style="color:#2A3A5C;font-size:0.72rem;font-family:monospace"> unchanged</span>'
  
-        if dtype == "crashlytics_log":
-            dtype_html = ('<span class="desc-type-badge" style="background:#1A1A2E;'
-                          'color:#78909C;border:1px solid #2A2A4E">📊 Crashlytics</span>')
-        elif dtype == "bug_report":
-            dtype_html = ('<span class="desc-type-badge" style="background:#0D2A1A;'
-                          'color:#43A047;border:1px solid #1A4A2A">🐛 Bug Report</span>')
-        else:
-            dtype_html = ('<span class="desc-type-badge" style="background:#1A1A2E;'
-                          'color:#4A5A7A;border:1px solid #2A2A4E">📄 No Desc</span>')
+ 
  
         # Extracted content
         actual_html   = ""
@@ -948,30 +942,25 @@ def tab_reprioritizer():
             f"{row['Issue Key']}  ·  {str(row['Summary'])[:80]}",
             expanded=False,
         ):
-            st.markdown(f"""
-            <div style="padding:0.2rem 0 0.6rem 0">
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:0.8rem">
-                    <span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;
-                                 color:#4FC3F7;font-weight:600">{row['Issue Key']}</span>
-                    {change_html}
-                    {change_html}
-                </div>
-                <div style="font-size:0.82rem;color:#A0B0CC;margin-bottom:0.6rem">
-                    {str(row['Summary'])}
-                </div>
-                {content_block}
-                <div style="margin-top:0.8rem;padding:0.6rem 0.8rem;
-                            background:#0A1020;border-radius:6px;
-                            border-left:3px solid #4FC3F7">
-                    <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;
-                                 color:#4FC3F7;letter-spacing:0.1em;
-                                 text-transform:uppercase">Karar gerekçesi</span>
-                    <div style="font-size:0.78rem;color:#8A9ABB;margin-top:4px;line-height:1.6">
-                        {row['Reason'][:300]}
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+            reason_clean = str(row['Reason'])
+            reason_clean = reason_clean.replace('[No strong signals. Defaulting to Medium — likely a functional scenario that needs manual review.]', '').strip()
+            reason_clean = reason_clean.replace('[No strong signals. Defaulting to Low — likely a cosmetic or edge-case scenario.]', '').strip()
+            reason_clean = reason_clean.strip(' ·').strip()
+            st.markdown(
+                f'<div style="padding:0.2rem 0 0.6rem 0">' +
+                f'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:0.8rem">' +
+                f'<span style="font-family:JetBrains Mono,monospace;font-size:0.78rem;color:#4FC3F7;font-weight:600">{row["Issue Key"]}</span>' +
+                f'{change_html}' +
+                f'</div>' +
+                f'<div style="font-size:0.82rem;color:#A0B0CC;margin-bottom:0.6rem">{str(row["Summary"])}</div>' +
+                content_block +
+                (f'<div style="margin-top:0.8rem;padding:0.6rem 0.8rem;background:#0A1020;border-radius:6px;border-left:3px solid #4FC3F7">' +
+                 f'<div style="font-family:monospace;font-size:0.6rem;color:#4FC3F7;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">Karar gerekcesi</div>' +
+                 f'<div style="font-size:0.78rem;color:#8A9ABB;line-height:1.6">{reason_clean}</div>' +
+                 f'</div>' if reason_clean else '') +
+                f'</div>',
+                unsafe_allow_html=True,
+            )
  
     if len(filtered) > 80:
         st.markdown(
@@ -1040,7 +1029,7 @@ def main():
  
 if __name__ == "__main__":
     main()
-
+ 
 
 if __name__ == "__main__":
     main()
