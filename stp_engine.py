@@ -213,6 +213,60 @@ def _hit(text: str, terms: list):
     return None
  
 # ═══════════════════════════════════════════════════════════════
+# Core vs Secondary feature classifier
+# ═══════════════════════════════════════════════════════════════
+ 
+# BiP'in CORE fonksiyonları — bunlar etkilenirse Gating
+CORE_FEATURE_TERMS = [
+    # Mesajlaşma
+    "message", "chat", "send", "receive", "inbox",
+    "mesaj", "sohbet", "gönder",
+    # Arama
+    "call", "voice", "video call", "arama", "sesli", "görüntülü",
+    # Login / auth
+    "login", "sign in", "otp", "authentication",
+    "giriş", "oturum",
+    # App genel açılış
+    "app launch", "app open", "on launch", "on startup",
+    "uygulama aç",
+]
+ 
+# SECONDARY feature'lar — crash olsa bile Gating değil, High
+SECONDARY_FEATURE_TERMS = [
+    # Media / 3rd party
+    "youtube", "video player", "gif", "sticker market",
+    "rich link", "link preview", "image download",
+    # Discovery / channels
+    "discover", "ddm", "channel info", "meb channel",
+    "explore", "keşfet",
+    # Live location
+    "live location", "location sharing", "canlı konum",
+    # Polls / surveys (core olmayan)
+    "poll", "survey", "anket",
+    # Theme / UI settings
+    "theme", "dark mode", "tema",
+    # Disappearing messages
+    "disappearing", "kaybolan mesaj",
+    # Stories / status
+    "story", "status", "hikaye", "durum",
+    # Paycell / payment (3rd party)
+    "paycell", "payment", "wallet",
+    # Temiz Gol / external apps
+    "temiz gol",
+]
+ 
+def _is_secondary_feature(summary: str) -> bool:
+    """Summary secondary feature içeriyor mu?"""
+    s = summary.lower()
+    return any(t in s for t in SECONDARY_FEATURE_TERMS)
+ 
+def _has_core_feature(summary: str) -> bool:
+    """Summary core BiP feature içeriyor mu?"""
+    s = summary.lower()
+    return any(t in s for t in CORE_FEATURE_TERMS)
+ 
+ 
+# ═══════════════════════════════════════════════════════════════
 # Crashlytics log dump detector
 # ═══════════════════════════════════════════════════════════════
 def _is_crashlytics_log(summary: str) -> bool:
@@ -254,7 +308,27 @@ def _decide(summary: str, steps: str, expected: str,
     # ── Gating: summary ───────────────────────────────────────
     hit = _hit(s, all_g)
     if hit:
-        return "Gating", hit
+        # Crash/freeze için context kontrolü:
+        # Core feature etkileniyorsa → Gating
+        # Secondary feature etkileniyorsa → High
+        CRASH_FREEZE_SET = {
+            "crash", "crashes", "crashed", "force close",
+            "fatal error", "anr", "not responding",
+            "freeze", "frozen", "hang", "hangs", "hung",
+            "stuck", "unresponsive",
+            "çöküyor", "çöktü", "kapanıyor",
+            "donuyor", "dondu", "takılıyor", "takıldı",
+        }
+        is_crash_or_freeze = hit in CRASH_FREEZE_SET
+ 
+        if is_crash_or_freeze and _is_secondary_feature(summary):
+            # Secondary feature crash → High, Gating değil
+            return "High", f"secondary-feature crash: {hit}"
+        elif is_crash_or_freeze and not _has_core_feature(summary):
+            # Bağlam belirsiz ama core değil → High (conservative)
+            return "High", f"non-core crash: {hit}"
+        else:
+            return "Gating", hit
  
     # ── High: summary ─────────────────────────────────────────
     hit = _hit(s, all_h)
@@ -408,6 +482,10 @@ def decide_priority(
  
     return priority, is_scoped, scope_type, scope_detail, reason, adjusted_note
  
+ 
+def stp_priority_from_text(text: str, feature_name: str = "") -> Tuple[str, str]:
+    """Backwards compat."""
+    return _decide(text, "", "", feature_name)
  
 def stp_priority_from_text(text: str, feature_name: str = "") -> Tuple[str, str]:
     """Backwards compat."""
