@@ -285,7 +285,7 @@ def inject_css():
     /* ── Inputs ── */
     .stTextInput input, .stTextArea textarea {
         background: #FFFFFF !important; border: 1.5px solid #D0D9E8 !important;
-        border-radius: 8px !important; color: #EEF2F8 !important;
+        border-radius: 8px !important; color: #1A2340 !important;
         font-family: 'Inter', sans-serif !important; font-size: 0.88rem !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
     }
@@ -298,7 +298,7 @@ def inject_css():
     }
     .stSelectbox > div > div {
         background: #FFFFFF !important; border: 1.5px solid #D0D9E8 !important;
-        border-radius: 8px !important; color: #EEF2F8 !important;
+        border-radius: 8px !important; color: #1A2340 !important;
     }
  
     /* ── Button ── */
@@ -1086,3 +1086,4 @@ def main():
  
 if __name__ == "__main__":
     main()
+ 
