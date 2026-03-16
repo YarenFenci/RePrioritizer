@@ -261,7 +261,7 @@ def inject_css():
     .stp-header { padding: 1.6rem 0 0.8rem 0; }
     .stp-title {
         font-family: 'Syne', sans-serif; font-size: 1.9rem; font-weight: 800;
-        color: #EEF2F8; letter-spacing: -0.03em; line-height: 1.1; margin: 0;
+        color: #1A2340; letter-spacing: -0.03em; line-height: 1.1; margin: 0;
     }
     .stp-title span { color: #1976D2; }
     .stp-subtitle { font-size: 0.82rem; color: #6B7A99; margin-top: 0.4rem; }
@@ -1045,7 +1045,7 @@ def main():
  
     st.markdown("""
     <div class="stp-header">
-        <div class="stp-title">STP <span>Analyzer</span></div>
+        <div class="stp-title"><span>STP</span> Analyzer</div>
         <div class="stp-subtitle">
             BiP QA &nbsp;·&nbsp;
             Defined Scenario PreReview &nbsp;·&nbsp;
@@ -1066,6 +1066,9 @@ def main():
     with tab2:
         tab_reprioritizer()
  
+ 
+if __name__ == "__main__":
+    main()
  
 if __name__ == "__main__":
     main()
