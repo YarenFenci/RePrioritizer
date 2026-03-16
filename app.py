@@ -1025,14 +1025,8 @@ def tab_reprioritizer():
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
     col_d1, col_d2 = st.columns(2)
     def _build_export(df):
-        out = df[["Issue Key", "Summary", "Current Priority", "STP Priority",
-                  "Extracted Steps", "Extracted Actual", "Extracted Expected", "Reason"]].copy()
-        out.columns = [
-            "Issue Key", "Summary",
-            "Current Priority", "STP Priority",
-            "Steps (from Description)", "Actual Result (from Description)",
-            "Expected Result (from Description)", "STP Decision Reason",
-        ]
+        out = df[["Issue Key", "Summary", "Current Priority", "STP Priority", "Reason"]].copy()
+        out.columns = ["Issue Key", "Summary", "Current Priority", "STP Priority", "STP Reason"]
         return out
  
     with col_d1:
@@ -1092,5 +1086,4 @@ def main():
  
 if __name__ == "__main__":
     main()
- 
 
