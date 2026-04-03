@@ -67,23 +67,16 @@ FREQ_META = {
 # ═══════════════════════════════════════════════════════════════
  
 def parse_description(desc: str) -> dict:
-    """
-    Jira Description alanını ayrıştır.
-    Crashlytics log mu, bug report mu ayırt et.
-    Bug report ise steps / actual / expected çıkar.
-    """
     if not desc or not desc.strip():
         return {"type": "empty"}
  
     d = desc.strip()
  
-    # Crashlytics / Firebase log dump
     if re.search(r'console\.firebase\.google\.com', d):
         return {"type": "crashlytics_log", "raw": d[:600]}
  
     parts = {"type": "bug_report", "raw": d}
  
-    # Steps
     m = re.search(
         r'(?:steps?\s*(?:to\s*)?reproduce|test\s*steps?)\s*[:\n]+(.*?)'
         r'(?=\n\s*(?:actual|expected|precondition|logs?|tr\s*:|en\s*:|$))',
@@ -92,7 +85,6 @@ def parse_description(desc: str) -> dict:
     if m:
         parts["steps"] = _clean_jira(m.group(1))
  
-    # Actual result
     m = re.search(
         r'actual\s*result\s*[:\n]+(.*?)'
         r'(?=\n\s*(?:expected|steps?|precondition|logs?|tr\s*:|en\s*:|$))',
@@ -101,7 +93,6 @@ def parse_description(desc: str) -> dict:
     if m:
         parts["actual"] = _clean_jira(m.group(1))
  
-    # Expected result
     m = re.search(
         r'expected\s*result\s*[:\n]+(.*?)'
         r'(?=\n\s*(?:actual|steps?|precondition|logs?|tr\s*:|en\s*:|$))',
@@ -114,7 +105,6 @@ def parse_description(desc: str) -> dict:
  
  
 def _clean_jira(text: str) -> str:
-    """Jira markup temizle, boşlukları normalize et."""
     t = re.sub(r'\*+', '', text)
     t = re.sub(r'h[123]\.\s*', '', t)
     t = re.sub(r'\[.*?\]', '', t)
@@ -130,13 +120,8 @@ def _clean_jira(text: str) -> str:
 # ═══════════════════════════════════════════════════════════════
  
 def reprioritize_row(summary: str, desc: str, current_priority: str) -> dict:
-    """
-    Tek satır için priority kararı ver.
-    Description'dan steps/actual/expected çıkararak stp_engine'e besler.
-    """
     desc_parts = parse_description(desc)
  
-    # Crashlytics log → summary'de "Crashlytics" prefix varsa log dump, mevcut priority koru
     if desc_parts["type"] == "crashlytics_log":
         is_log_only = bool(re.match(r'^crashlytics\s*[-|]', summary.lower()))
         if is_log_only:
@@ -257,7 +242,6 @@ def inject_css():
     .stApp { background: #F4F6FA; }
     .block-container { padding-top: 1rem !important; max-width: 1300px !important; }
  
-    /* ── Header ── */
     .stp-header { padding: 1.6rem 0 0.8rem 0; }
     .stp-title {
         font-family: 'Syne', sans-serif; font-size: 1.9rem; font-weight: 800;
@@ -271,7 +255,6 @@ def inject_css():
         margin: 0.8rem 0 0.5rem 0;
     }
  
-    /* ── Labels ── */
     .form-label {
         font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 600;
         color: #1976D2; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.4rem;
@@ -282,7 +265,6 @@ def inject_css():
         margin: 0.8rem 0 0.3rem 0;
     }
  
-    /* ── Inputs ── */
     .stTextInput input, .stTextArea textarea {
         background: #FFFFFF !important; border: 1.5px solid #D0D9E8 !important;
         border-radius: 8px !important; color: #1A2340 !important;
@@ -301,7 +283,6 @@ def inject_css():
         border-radius: 8px !important; color: #1A2340 !important;
     }
  
-    /* ── Button ── */
     .stButton > button {
         background: linear-gradient(135deg, #1976D2, #1565C0) !important;
         color: #FFFFFF !important; border: none !important; border-radius: 8px !important;
@@ -316,7 +297,6 @@ def inject_css():
         box-shadow: 0 4px 12px rgba(25,118,210,0.4) !important;
     }
  
-    /* ── Tabs ── */
     .stTabs [data-baseweb="tab-list"] {
         gap: 4px; background: #EEF2F8 !important;
         border-bottom: 2px solid #D0D9E8 !important;
@@ -332,7 +312,6 @@ def inject_css():
         border-bottom: 2px solid #1976D2 !important; font-weight: 600 !important;
     }
  
-    /* ── Result card (Tab 1) ── */
     .result-card { border-radius: 12px; padding: 1.4rem; margin-bottom: 1rem; border: 1.5px solid; }
     .result-priority-label {
         font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 600;
@@ -344,7 +323,6 @@ def inject_css():
     }
     .result-desc { font-size: 0.82rem; opacity: 0.8; line-height: 1.4; }
  
-    /* ── Reason / info boxes ── */
     .reason-box {
         background: #FFFFFF; border: 1.5px solid #D0D9E8;
         border-left: 4px solid #1976D2;
@@ -367,7 +345,6 @@ def inject_css():
         text-transform: uppercase; margin-bottom: 0.3rem; font-weight: 600; color: #1976D2;
     }
  
-    /* ── Keyword chips ── */
     .keyword-box {
         background: #FFFFFF; border: 1.5px solid #D0D9E8; border-radius: 8px;
         padding: 0.8rem 1.1rem; margin-top: 0.8rem;
@@ -379,7 +356,6 @@ def inject_css():
         font-size: 0.68rem; color: #3A5A8A; margin: 2px 3px;
     }
  
-    /* ── Compare boxes ── */
     .cmp-box {
         background: #FFFFFF; border: 1.5px solid #D0D9E8; border-radius: 8px;
         padding: 0.8rem 1rem; margin-top: 0.5rem;
@@ -391,7 +367,6 @@ def inject_css():
     }
     .cmp-text { font-size: 0.82rem; color: #3A4A6B; line-height: 1.5; }
  
-    /* ── Stat boxes ── */
     .stat-box {
         background: #FFFFFF; border: 1.5px solid #D0D9E8; border-radius: 10px;
         padding: 0.9rem 1rem; text-align: center;
@@ -402,14 +377,12 @@ def inject_css():
     }
     .stat-label { font-size: 0.7rem; color: #7890B0; margin-top: 3px; font-weight: 500; }
  
-    /* ── Priority badge ── */
     .p-badge {
         display: inline-block; padding: 2px 10px; border-radius: 4px;
         font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
         font-weight: 700; color: #fff; letter-spacing: 0.04em;
     }
  
-    /* ── History rows ── */
     .hist-row {
         display: flex; align-items: center; gap: 10px; padding: 0.6rem 0.9rem;
         border-radius: 8px; background: #FFFFFF; border: 1.5px solid #D0D9E8;
@@ -423,7 +396,6 @@ def inject_css():
         padding: 2px 9px; border-radius: 4px; color: #fff; white-space: nowrap;
     }
  
-    /* ── Reprio cards ── */
     .reprio-card {
         background: #FFFFFF; border: 1.5px solid #D0D9E8; border-radius: 10px;
         padding: 0.9rem 1.1rem; margin-bottom: 0.5rem;
@@ -439,7 +411,6 @@ def inject_css():
         border-radius: 10px; font-weight: 600;
     }
  
-    /* ── Streamlit overrides ── */
     div[data-testid="stFileUploader"] {
         border: 1.5px solid #D0D9E8 !important; border-radius: 8px !important;
         background: #FFFFFF !important;
@@ -448,7 +419,6 @@ def inject_css():
     section[data-testid="stSidebar"] {
         background: #EEF2F8 !important; border-right: 1.5px solid #D0D9E8 !important;
     }
-    /* Expander styling */
     details { background: #FFFFFF !important; border: 1.5px solid #D0D9E8 !important; border-radius: 8px !important; margin-bottom: 6px !important; }
     details summary { color: #EEF2F8 !important; font-size: 0.84rem !important; font-weight: 500 !important; }
     details summary:hover { background: #F0F4FA !important; }
@@ -465,6 +435,14 @@ def inject_css():
 def priority_badge(p: str) -> str:
     col = PRIORITY_COLORS.get(p, "#78909C")
     return f'<span class="p-badge" style="background:{col}">{p}</span>'
+ 
+ 
+def safe_priority_index(p: str) -> int:
+    """PRIORITY_ORDER içinde yoksa -1 döndür — ValueError fırlatma."""
+    try:
+        return PRIORITY_ORDER.index(p)
+    except ValueError:
+        return -1
  
  
 def find_hit_keywords(text: str, priority: str) -> List[str]:
@@ -622,7 +600,6 @@ def tab_prereview():
         st.markdown("<br>", unsafe_allow_html=True)
         analyze = st.button("▶  Analyze Priority", key="pre_analyze_v3")
  
-        # Legend
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown('<div class="form-label" style="color:#3A4A6B;margin-bottom:0.6rem">Priority Reference</div>',
                     unsafe_allow_html=True)
@@ -681,7 +658,6 @@ def tab_prereview():
             </div>
             """, unsafe_allow_html=True)
  
-    # Session history
     if st.session_state.get("history"):
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown(
@@ -772,64 +748,7 @@ def render_reprio_summary_stats(out_df: pd.DataFrame):
     )
  
  
- 
-def render_reprio_cards(display_df: pd.DataFrame, max_show: int = 60):
-    shown = display_df.head(max_show)
- 
-    for _, row in shown.iterrows():
-        cur = row["Current Priority"]
-        stp = row["STP Priority"]
-        changed = row["Changed"]
- 
-        cur_badge = priority_badge(cur) if cur else \
-            '<span style="color:#3A4A6B;font-size:0.75rem">—</span>'
-        stp_badge = priority_badge(stp)
- 
-        dtype = row.get("Desc Type", "")
-        dtype_html = ""  # removed
- 
-        arrow_html = (f'<span class="arrow">→</span> {stp_badge}' if changed
-                      else '<span style="color:#3A4A6B;font-size:0.75rem">unchanged</span>')
- 
-        extracted_parts = []
-        if row.get("Extracted Actual"):
-            extracted_parts.append(
-                f'<span style="color:#E53935;font-size:0.68rem">● actual:</span> '
-                f'<span style="color:#5A6A8A;font-size:0.72rem">{row["Extracted Actual"][:90]}</span>'
-            )
-        if row.get("Extracted Expected"):
-            extracted_parts.append(
-                f'<span style="color:#43A047;font-size:0.68rem">● expected:</span> '
-                f'<span style="color:#5A6A8A;font-size:0.72rem">{row["Extracted Expected"][:90]}</span>'
-            )
-        extracted_html = ('<div style="margin:0.4rem 0">' + "<br>".join(extracted_parts) + '</div>'
-                          if extracted_parts else "")
- 
-        st.markdown(f"""
-        <div class="reprio-card">
-            <div class="reprio-header">
-                <span class="reprio-key">{row['Issue Key']}</span>
-                {cur_badge}
-                {arrow_html}
-            </div>
-            <div class="reprio-summary">{str(row['Summary'])[:120]}</div>
-            {extracted_html}
-            <div class="reprio-reason">💡 {row['Reason'][:180]}</div>
-        </div>
-        """, unsafe_allow_html=True)
- 
-    total = len(display_df)
-    if total > max_show:
-        st.markdown(
-            f'<div style="text-align:center;color:#5A6A8A;font-size:0.75rem;'
-            f'font-family:monospace;padding:0.5rem">'
-            f'İlk {max_show} / {total} gösteriliyor — tam liste için CSV indir</div>',
-            unsafe_allow_html=True,
-        )
- 
- 
 def tab_reprioritizer():
-    # ── Upload bar ────────────────────────────────────────────
     col_up, col_info = st.columns([2, 1], gap="large")
     with col_up:
         st.markdown(
@@ -869,7 +788,6 @@ def tab_reprioritizer():
         """, unsafe_allow_html=True)
         return
  
-    # ── Run ───────────────────────────────────────────────────
     try:
         with st.spinner("Ayrıştırılıyor ve priority hesaplanıyor..."):
             df, fname = load_reprio_csv(uploaded)
@@ -881,12 +799,10 @@ def tab_reprioritizer():
         st.error(f"Hata: {e}")
         return
  
-    # ── Summary stats ─────────────────────────────────────────
     st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
     render_reprio_summary_stats(out_df)
     st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
  
-    # ── Filters ───────────────────────────────────────────────
     col_f1, col_f2, col_f3 = st.columns([1, 2, 1])
     with col_f1:
         show_changed = st.checkbox(
@@ -903,7 +819,6 @@ def tab_reprioritizer():
     with col_f3:
         pass
  
-    # ── Apply filters ─────────────────────────────────────────
     filtered = out_df[out_df["STP Priority"].isin(filter_stp)]
     if show_changed:
         filtered = filtered[filtered["Changed"]]
@@ -914,17 +829,18 @@ def tab_reprioritizer():
         unsafe_allow_html=True,
     )
  
-    # ── Issue cards ───────────────────────────────────────────
     for _, row in filtered.head(80).iterrows():
-        cur     = row["Current Priority"]
-        stp     = row["STP Priority"]
+        cur     = str(row["Current Priority"]).strip()
+        stp     = str(row["STP Priority"]).strip()
         changed = row["Changed"]
         dtype   = row.get("Desc Type", "")
  
         cur_col = PRIORITY_COLORS.get(cur, "#78909C")
         stp_col = PRIORITY_COLORS.get(stp, "#78909C")
  
-        # Header line
+        cur_idx = safe_priority_index(cur)
+        stp_idx = safe_priority_index(stp)
+ 
         cur_html = (f'<span class="p-badge" style="background:{cur_col}">{cur}</span>'
                     if cur else '<span style="color:#3A4A6B;font-size:0.75rem">—</span>')
         stp_html = f'<span class="p-badge" style="background:{stp_col}">{stp}</span>'
@@ -934,9 +850,6 @@ def tab_reprioritizer():
         else:
             change_html = f'{stp_html} <span style="color:#B0BED0;font-size:0.72rem;font-family:monospace"> unchanged</span>'
  
- 
- 
-        # Extracted content
         actual_html   = ""
         expected_html = ""
         steps_html    = ""
@@ -976,7 +889,9 @@ def tab_reprioritizer():
         else:
             content_block = steps_html + actual_html + expected_html
  
-        border_col = stp_col if changed else "#D0D9E8"
+        # ── FIX: safe_priority_index kullanarak ValueError engellendi ──
+        went_up   = (cur_idx != -1 and stp_idx != -1 and stp_idx < cur_idx)
+        went_down = (cur_idx != -1 and stp_idx != -1 and stp_idx > cur_idx)
  
         with st.expander(
             f"{row['Issue Key']}  ·  {str(row['Summary'])[:80]}",
@@ -987,29 +902,29 @@ def tab_reprioritizer():
             reason_clean = reason_clean.replace('[No strong signals. Defaulting to Low — likely a cosmetic or edge-case scenario.]', '').strip()
             reason_clean = reason_clean.strip(' ·').strip()
             st.markdown(
-                f'<div style="padding:0.2rem 0 0.6rem 0">' +
-                f'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:0.8rem">' +
-                f'<span style="font-family:JetBrains Mono,monospace;font-size:0.78rem;color:#1976D2;font-weight:700">{row["Issue Key"]}</span>' +
-                f'</div>' +
-                f'<div style="font-size:0.84rem;color:#1A2340;font-weight:500;margin-bottom:0.8rem">{str(row["Summary"])}</div>' +
-                f'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0.6rem">' +
-                f'<div style="background:#F4F6FA;border:1.5px solid #D0D9E8;border-radius:8px;padding:0.6rem 0.8rem">' +
-                f'<div style="font-family:monospace;font-size:0.6rem;color:#7890B0;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">Current Priority</div>' +
-                f'<span class="p-badge" style="background:{cur_col}">{cur if cur else "—"}</span>' +
-                f'</div>' +
-                f'<div style="background:#EBF3FD;border:1.5px solid #90CAF9;border-radius:8px;padding:0.6rem 0.8rem">' +
-                f'<div style="font-family:monospace;font-size:0.6rem;color:#1976D2;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">STP Priority</div>' +
-                f'<span class="p-badge" style="background:{stp_col}">{stp}</span>' +
-                (f'&nbsp;<span style="font-size:0.7rem;color:#E53935;font-weight:600">▲ yükseldi</span>' if PRIORITY_ORDER.index(stp) < PRIORITY_ORDER.index(cur) and cur in PRIORITY_ORDER and stp in PRIORITY_ORDER else '') +
-                (f'&nbsp;<span style="font-size:0.7rem;color:#43A047;font-weight:600">▼ düştü</span>' if PRIORITY_ORDER.index(stp) > PRIORITY_ORDER.index(cur) and cur in PRIORITY_ORDER and stp in PRIORITY_ORDER else '') +
-                f'</div>' +
-                f'</div>' +
-                content_block +
-                (f'<div style="margin-top:0.8rem;padding:0.6rem 0.8rem;background:#F0F4FA;border-radius:6px;border-left:3px solid #4FC3F7">' +
-                 f'<div style="font-family:monospace;font-size:0.6rem;color:#1976D2;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">Karar gerekcesi</div>' +
-                 f'<div style="font-size:0.78rem;color:#5A6A8A;line-height:1.6">{reason_clean}</div>' +
-                 f'</div>' if reason_clean else '') +
-                f'</div>',
+                f'<div style="padding:0.2rem 0 0.6rem 0">'
+                f'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:0.8rem">'
+                f'<span style="font-family:JetBrains Mono,monospace;font-size:0.78rem;color:#1976D2;font-weight:700">{row["Issue Key"]}</span>'
+                f'</div>'
+                f'<div style="font-size:0.84rem;color:#1A2340;font-weight:500;margin-bottom:0.8rem">{str(row["Summary"])}</div>'
+                f'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0.6rem">'
+                f'<div style="background:#F4F6FA;border:1.5px solid #D0D9E8;border-radius:8px;padding:0.6rem 0.8rem">'
+                f'<div style="font-family:monospace;font-size:0.6rem;color:#7890B0;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">Current Priority</div>'
+                f'<span class="p-badge" style="background:{cur_col}">{cur if cur else "—"}</span>'
+                f'</div>'
+                f'<div style="background:#EBF3FD;border:1.5px solid #90CAF9;border-radius:8px;padding:0.6rem 0.8rem">'
+                f'<div style="font-family:monospace;font-size:0.6rem;color:#1976D2;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">STP Priority</div>'
+                f'<span class="p-badge" style="background:{stp_col}">{stp}</span>'
+                + (f'&nbsp;<span style="font-size:0.7rem;color:#E53935;font-weight:600">▲ yükseldi</span>' if went_up else '')
+                + (f'&nbsp;<span style="font-size:0.7rem;color:#43A047;font-weight:600">▼ düştü</span>' if went_down else '')
+                + f'</div>'
+                f'</div>'
+                + content_block
+                + (f'<div style="margin-top:0.8rem;padding:0.6rem 0.8rem;background:#F0F4FA;border-radius:6px;border-left:3px solid #4FC3F7">'
+                   f'<div style="font-family:monospace;font-size:0.6rem;color:#1976D2;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px">Karar gerekcesi</div>'
+                   f'<div style="font-size:0.78rem;color:#5A6A8A;line-height:1.6">{reason_clean}</div>'
+                   f'</div>' if reason_clean else '')
+                + f'</div>',
                 unsafe_allow_html=True,
             )
  
@@ -1021,7 +936,6 @@ def tab_reprioritizer():
             unsafe_allow_html=True,
         )
  
-    # ── Downloads ─────────────────────────────────────────────
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
     col_d1, col_d2 = st.columns(2)
     def _build_export(df):
